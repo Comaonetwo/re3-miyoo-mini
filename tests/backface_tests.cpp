@@ -1,0 +1,6 @@
+#include "software_device.hpp"
+#include <cassert>
+#include <random>
+int main(){using namespace soft;Renderer r;SoftwareDevice d(r);Camera camera;camera.position={0,0,0};d.begin(camera);d.highQuality(false);rw::SetRenderState(rw::ALPHATESTFUNC,rw::ALPHAALWAYS);auto g=rw::Geometry::create(3,1,rw::Geometry::POSITIONS);auto mat=rw::Material::create();g->triangles[0].matId=g->matList.appendMaterial(mat);mat->destroy();for(int i=0;i<3;++i)g->triangles[0].v[i]=i;auto atomic=rw::Atomic::create();atomic->setGeometry(g,0);std::mt19937 rng(1818);std::uniform_real_distribution<float> xy(-6,6),z(.01f,12);
+for(unsigned cull:{unsigned(rw::CULLBACK),unsigned(rw::CULLFRONT)}){rw::SetRenderState(rw::CULLMODE,cull);for(unsigned test=0;test<300;++test){rw::cpu::Im3DVertex v[3];for(unsigned i=0;i<3;++i){v[i].position={xy(rng),xy(rng),z(rng)};v[i].setColor(255,255,255,255);g->morphTargets[0].vertices[i]=v[i].position;}r.clear(0);atomic->render();auto image=r.pixels();auto depth=r.depth();r.clear(0);rw::im3d::Transform(v,3,nullptr,rw::im3d::EVERYTHING);rw::im3d::RenderPrimitive(rw::PRIMTYPETRILIST);rw::im3d::End();assert(r.pixels()==image);assert(r.depth()==depth);}}
+assert(d.backfaceTriangles()>50);assert(!d.unsupported());atomic->destroy();g->destroy();d.end();}

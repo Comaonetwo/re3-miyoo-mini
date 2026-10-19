@@ -1,0 +1,8 @@
+{
+  "edition": "Classic PC two-disc InstallShield edition",
+  "cab_sha256": {
+    "data2.cab": "0f9145db791060c9b661d8045b1041415c1552c1ba5136bdbe0baa10a6c2fa7b",
+    "data1.cab": "2c4853fd78739f9dda5cf362bab9d0652a3e5798d183fa4b4b90b12c5bd3f761",
+    "data1.hdr": "5100b795f571b5d90df18b3fd6c8d37b1ef8a62318f3746541d146e4eca99ccf"
+  }
+}

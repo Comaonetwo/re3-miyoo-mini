@@ -1,0 +1,6 @@
+#include "flat_blend.hpp"
+#include "soft_renderer.hpp"
+#include <cassert>
+int main(){using namespace soft;for(unsigned mode=0;mode<=5;++mode)for(unsigned alpha:{0u,1u,87u,128u,254u,255u}){unsigned r=83,g=169,b=231;FlatBlend table(r,g,b,alpha,mode);for(unsigned old=0;old<65536;++old){unsigned dr=old>>11,dg=(old>>5)&63,db=old&31;dr=(dr<<3)|(dr>>2);dg=(dg<<2)|(dg>>4);db=(db<<3)|(db>>2);auto f=[&](unsigned src,unsigned dst){switch(mode){case 1:return (src*alpha+dst*(255-alpha)+127)/255;case 2:return std::min(255u,dst+(src*alpha+127)/255);case 3:return std::min(255u,dst+src);case 4:return (dst*(255-src)+127)/255;case 5:return dst;default:return src;}};assert(table(old)==rgb(f(r,dr),f(g,dg),f(b,db)));}
+// Exercise the actual large-triangle dispatch and its depth/coverage behavior.
+Renderer renderer;renderer.clear(rgb(51,79,103));ScreenState state;state.blend=mode;ScreenVertex v[3]={{0,0,2,0,0,float(r),float(g),float(b),float(alpha)},{320,0,2,0,0,float(r),float(g),float(b),float(alpha)},{0,240,2,0,0,float(r),float(g),float(b),float(alpha)}};renderer.screenTriangle(v,nullptr,state);assert(renderer.pixels()[20*320+20]==(alpha>=state.alphaRef?table(rgb(51,79,103)):rgb(51,79,103)));assert(renderer.pixels()[239*320+319]==rgb(51,79,103));}}

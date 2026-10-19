@@ -1,0 +1,35 @@
+GTA III (re3) for Miyoo Mini — your own game data is required
+
+Use a legally purchased copy of the original/classic PC GTA III.
+Definitive Edition, mobile and console game data are not supported.
+Install the full PC game from your own media first. A CD/ISO alone is not
+an installed game directory. No original EXE or DLL is required on Miyoo.
+
+Prepare on your computer with Python 3 and FFmpeg:
+  python3 tools/prepare-game.py "/path/to/installed/GTAIII" "/path/to/new/game"
+Windows: use `py` instead of python3 if appropriate.
+Copy the resulting game directory into:
+  Roms/PORTS/Games/GTA3Core14/
+
+Required structure (folder/file names are lowercase):
+  game/models/           including gta3.img, gta3.dir, coll/peds.col
+  game/data/             including gta3.dat and main.scm, plus all subfolders
+  game/text/             including american.gxt
+  game/anim/             including ped.ifp
+  game/txd/              original game textures
+  game/audio/sfx.raw
+  game/audio/sfx.sdt
+  game/audio_pcm/000.pcm through 195.pcm
+
+Do not copy only the example files: use the preparation tool to copy the
+complete folders and convert all 196 streamed audio tracks to 22050Hz,
+mono signed16 little-endian PCM. Conversion needs space on your computer
+and card. It may take several minutes. Existing output is never overwritten.
+If FFmpeg is not on PATH, add: --ffmpeg "/path/to/ffmpeg"
+An existing personally owned working port's audio_pcm can be reused with:
+  --preconverted-audio "/path/to/your/working/game/audio_pcm"
+
+The release contains no game models, textures, scripts, music, voices or saves.
+The menu cover is separate promotional artwork and is not an MIT-licensed
+project asset. It is not used by the engine as game data.
+Never distribute the generated game folder, your saves or audio files.

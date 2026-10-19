@@ -1,0 +1,17 @@
+/vendor/
+/build*/
+/dist/
+/work/
+/game/
+/userfiles/
+__pycache__/
+*.pyc
+*.log
+*.pcm
+*.sav
+*.iso
+*.img
+*.txd
+*.dff
+*.raw
+.DS_Store

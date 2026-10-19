@@ -1,0 +1,7 @@
+re3 upstream notice
+Pinned source: https://github.com/hottabxp/re3/tree/3233ffe1c4b99e8efb4c41c6794b4fce880cf503
+
+We don't feel like we're in a position to give this code a license.\
+The code should only be used for educational, documentation and modding purposes.\
+We do not encourage piracy or commercial use.\
+Please keep derivate work open source and give proper credit.

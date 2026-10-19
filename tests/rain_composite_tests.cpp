@@ -1,0 +1,23 @@
+#include "rain_composite.hpp"
+#include "soft_renderer.hpp"
+#include <cassert>
+#include <cstdio>
+#include <random>
+#include <limits>
+using namespace soft;
+static unsigned reference(uint16_t* p,const float* z,const uint16_t*r,const uint16_t*g,const uint16_t*b,const float*m,unsigned count){unsigned n=0;for(unsigned x=0;x<count;++x)if((r[x]|g[x]|b[x])&&z[x]<m[x]){unsigned old=p[x],rr=old>>11,gg=(old>>5)&63,bb=old&31;p[x]=uint16_t((std::min(255u,((rr<<3)|(rr>>2))+r[x])>>3)<<11|(std::min(255u,((gg<<2)|(gg>>4))+g[x])>>2)<<5|(std::min(255u,((bb<<3)|(bb>>2))+b[x])>>3));++n;}return n;}
+int main(){std::mt19937 rng(71055);std::vector<uint16_t>p(65536),r(65536),g(65536),b(65536);std::vector<float>z(65536),m(65536);uint64_t pixels=0;
+ for(unsigned pattern=0;pattern<32;++pattern){for(unsigned n=0;n<65536;++n){p[n]=n;r[n]=pattern==0?0:pattern==1?255:rng()%256;g[n]=pattern==0?0:pattern==1?255:rng()%256;b[n]=pattern==0?0:pattern==1?255:rng()%256;uint32_t zz=rng()%0x7f800001u,mm=rng()%0x7f800001u;std::memcpy(&z[n],&zz,4);std::memcpy(&m[n],&mm,4);if(pattern%4==0)m[n]=z[n];if(pattern%4==1){z[n]=0;m[n]=std::numeric_limits<float>::infinity();}}
+ auto expected=p;unsigned written=reference(expected.data(),z.data(),r.data(),g.data(),b.data(),m.data(),65536);assert(rainCompositeRow(p.data(),z.data(),r.data(),g.data(),b.data(),m.data(),65536)==written);assert(p==expected);pixels+=65536;}
+ unsigned guards=0;for(unsigned offset=0;offset<8;++offset)for(unsigned count=0;count<=80;++count){for(unsigned n=0;n<count+24;++n){p[n]=rng();r[n]=rng()%256;g[n]=rng()%256;b[n]=rng()%256;z[n]=float(n%3);m[n]=float(n%4);}auto expected=p;unsigned written=reference(expected.data()+offset,z.data()+offset,r.data()+offset,g.data()+offset,b.data()+offset,m.data()+offset,count);assert(rainCompositeRow(p.data()+offset,z.data()+offset,r.data()+offset,g.data()+offset,b.data()+offset,m.data()+offset,count)==written);assert(p==expected);++guards;}
+ uint64_t maximums=0;for(unsigned n=0;n<1000000;++n){float d[4];for(auto&v:d){uint32_t bits=rng()%0x7f800001u;if(n%7==0)bits=0x80000000u;std::memcpy(&v,&bits,4);}float ref=0;for(auto v:d)ref=std::max(ref,v);float actual=rainDepth2x2(d,d+2);assert(std::memcmp(&ref,&actual,4)==0);++maximums;}
+ std::printf("PASS rain depth %llu exact 2x2 positive IEEE/zero/inf maxima\n",(unsigned long long)maximums);
+ unsigned rows=0;for(unsigned offset=0;offset<8;++offset)for(unsigned count=0;count<=128;++count){std::vector<float> top(count*2+24),bottom(count*2+24),out(count+24,123.5f);for(unsigned k=0;k<top.size();++k){uint32_t bits=rng()%0x7f800001u;std::memcpy(&top[k],&bits,4);bits=rng()%0x7f800001u;std::memcpy(&bottom[k],&bits,4);}auto expected=out;for(unsigned k=0;k<count;++k){float m=0;for(unsigned j=0;j<2;++j){m=std::max(m,top[offset+k*2+j]);m=std::max(m,bottom[offset+k*2+j]);}expected[offset+k]=m;}rainDepthRow2x2(top.data()+offset,bottom.data()+offset,out.data()+offset,count);assert(!std::memcmp(out.data(),expected.data(),out.size()*sizeof(float)));++rows;}
+ std::printf("PASS rain depth row %u offset/tail/guard cases\n",rows);
+ unsigned cases=0;for(unsigned scale:{1u,2u,3u,4u})for(unsigned pattern=0;pattern<4;++pattern){Renderer fast,slow;fast.rainCompositeEnabled(true);slow.rainCompositeEnabled(false);Texture t;t.width=t.height=2;t.decodedOpaque=t.decodedUniform=true;t.pixels.assign(4,65535);t.alpha.assign(4,255);
+ for(auto q:{&fast,&slow}){q->renderScale(scale);q->clear(17291);ScreenVertex block[3]={{17,14,.04f,0,0,13,31,7,255,0},{181,18,.04f,0,0,13,31,7,255,0},{89,151,.04f,0,0,13,31,7,255,0}};ScreenState world;world.zTest=world.zWrite=true;world.perspectiveColor=true;q->screenTriangle(block,nullptr,world);}
+ bool f=fast.beginRain(120),s=slow.beginRain(120);assert(f==s);if(!f)continue;
+ for(unsigned layer=0;layer<3;++layer){ScreenVertex v[3]={{-3.7f,9.3f,.02f,0,0,73,93,113,255,0},{309.7f,37.9f,.021f,1,0,73,93,113,255,0},{57.1f,243.9f,.019f,0,1,73,93,113,255,0}};if(pattern==1)for(auto&vtx:v)vtx.reciprocalZ=.001f;if(pattern==2)for(auto&vtx:v)vtx.reciprocalZ=.06f;ScreenState state;state.zTest=true;state.zWrite=false;state.blend=3;state.perspectiveColor=true;state.addressU=state.addressV=1;fast.screenTriangle(v,&t,state);slow.screenTriangle(v,&t,state);}
+ fast.endRain();slow.endRain();assert(fast.pixels()==slow.pixels());assert(fast.depth()==slow.depth());assert(fast.stats().pixels==slow.stats().pixels);assert(fast.stats().rainCompositePixels==slow.stats().rainCompositePixels);assert(fast.stats().rainVectorPixels);++cases;}
+ std::printf("PASS rain composite %llu exact RGB565/depth-mask comparisons, %u offset/tail/guard cases, %u full rain RGB/depth/fragments/counts states\n",(unsigned long long)pixels,guards,cases);
+}

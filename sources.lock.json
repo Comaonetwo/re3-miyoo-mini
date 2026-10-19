@@ -1,0 +1,33 @@
+{
+  "inspected_on": "2026-10-11",
+  "re3": {
+    "url": "https://github.com/hottabxp/re3.git",
+    "revision": "3233ffe1c4b99e8efb4c41c6794b4fce880cf503"
+  },
+  "librw": {
+    "url": "https://github.com/aap/librw.git",
+    "revision": "5501c4fdc7425ff926be59369a13593bb6c81b54",
+    "selected_by": "re3 vendor/librw gitlink"
+  },
+  "miyoo_sdl2": {
+    "url": "https://github.com/steward-fu/sdl2.git",
+    "revision": "0631abc8e8916db6f9bc7e2afd0c22913d092a29"
+  },
+  "static_arm_compiler": "Zig 0.17.0",
+  "sdk_archive": {
+    "name": "mini_toolchain-v1.0.tar.gz",
+    "downloaded_or_validated": false
+  },
+  "meshoptimizer": {
+    "url": "https://github.com/zeux/meshoptimizer",
+    "version": "v0.25",
+    "license": "MIT",
+    "original_sha256": {
+      "LICENSE.md": "e4a26033e3551fb2722888949fbb41e77aee628e8e8f04dcffeee301aa7e5634",
+      "meshoptimizer.h": "c896a6d31dae787202172098e560eeef7780519e5ca085cf1a03e3f07ef0bb8a",
+      "allocator.cpp": "0bff407ee165d338026badacce8bd37320372cc687631a2a8054afa7147f1e26",
+      "simplifier.cpp": "a92aca2fa4a0e8e1aca91dbdd23b1c92a1ec2ff748a0827ce47cc8fb940477e8"
+    },
+    "patch": "scripts/patch-meshoptimizer.py: stable source triangle IDs during compaction"
+  }
+}
